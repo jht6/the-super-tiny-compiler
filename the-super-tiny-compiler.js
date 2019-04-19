@@ -99,41 +99,31 @@
  */
 
 /**
- * Most compilers break down into three primary stages: Parsing, Transformation,
- * and Code Generation
+ * 大多数编译器可以分为三个主要阶段：代码分析（Parsing），代码转换（Transformation），代码生成（Code Generation）。
  *
- * 1. *Parsing* is taking raw code and turning it into a more abstract
- *    representation of the code.
+ * 1. *代码分析* 将源代码转换成一种更抽象的代码表示形式（以下将其称为**抽象中间代码**）。
  *
- * 2. *Transformation* takes this abstract representation and manipulates to do
- *    whatever the compiler wants it to.
+ * 2. *代码转换* 接受这种**抽象中间代码**并操纵它，以完成编译器想让它做的任何事情。
  *
- * 3. *Code Generation* takes the transformed representation of the code and
- *    turns it into new code.
+ * 3. *代码生成* 接受经过转换的**抽象中间代码**并将它转换成新代码。
  */
 
 /**
- * Parsing
+ * 代码分析（Parsing）
  * -------
  *
- * Parsing typically gets broken down into two phases: Lexical Analysis and
- * Syntactic Analysis.
+ * 代码分析通常分为两个阶段：词法分析 和 语法分析。
  *
- * 1. *Lexical Analysis* takes the raw code and splits it apart into these things
- *    called tokens by a thing called a tokenizer (or lexer).
+ * 1. *词法分析* 接受源代码，并通过分词器（tokenizer）或词法分析器（lexer）将源代码分解为单词符号（token，不太好翻译，下文还是直接叫token吧）。
  *
- *    Tokens are an array of tiny little objects that describe an isolated piece
- *    of the syntax. They could be numbers, labels, punctuation, operators,
- *    whatever.
+ *    token是一系列很小的对象，每个token描述了语法的一个独立部分。它们可以是数字，标签，标点符号，
+ *    操作符，或其他任意内容。
  *
- * 2. *Syntactic Analysis* takes the tokens and reformats them into a
- *    representation that describes each part of the syntax and their relation
- *    to one another. This is known as an intermediate representation or
- *    Abstract Syntax Tree.
+ * 2. *语法分析* 接受一系列token，并将它们重新格式化为另一种表示形式，该表示形式描述语法的
+ *    每个部分及其相互之间的关系。这就是所谓的“中间形式”（也就是上文提到的**抽象中间代码**）或抽象语法树。
  *
- *    An Abstract Syntax Tree, or AST for short, is a deeply nested object that
- *    represents code in a way that is both easy to work with and tells us a lot
- *    of information.
+ *    一个抽象语法树（简称为AST）是一个深层嵌套的对象，它表示代码的方式既容易处理，又可以向
+ *    我们传达很多信息。
  *
  * For the following syntax:
  *
