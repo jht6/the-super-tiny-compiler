@@ -296,39 +296,33 @@
  */
 
 /**
- * Code Generation
+ * 代码生成（Code Generation）
  * ---------------
  *
- * The final phase of a compiler is code generation. Sometimes compilers will do
- * things that overlap with transformation, but for the most part code
- * generation just means take our AST and string-ify code back out.
+ * 编译器的最后一个阶段是代码生成。有时编译器会在此阶段做一些与代码转换阶段中相重叠的事情，
+ * 但大多数情况下“代码生成”是指接受AST并输出新代码。
  *
- * Code generators work several different ways, some compilers will reuse the
- * tokens from earlier, others will have created a separate representation of
- * the code so that they can print node linearly, but from what I can tell most
- * will use the same AST we just created, which is what we’re going to focus on.
+ * 代码生成器有多种不同的工作方式，有的编译器会重用之前的token，有的会创建一个单独的
+ * 代码表示形式以便能够线性地打印节点，但据我所知，大部分编译器会使用我们刚刚创建的AST，
+ * 这也是我们接下来要关注的方式。
  *
- * Effectively our code generator will know how to “print” all of the different
- * node types of the AST, and it will recursively call itself to print nested
- * nodes until everything is printed into one long string of code.
+ * 实际上，代码生成器知道如何“打印（print）” AST中不同类型的节点，并且会递归地调用自身来
+ * 打印嵌套的节点，直到所有内容都被输出到一个很长的代码字符串中。
  */
 
 /**
- * And that's it! That's all the different pieces of a compiler.
+ * 以上就是一个编译器的所有部分了！
  *
- * Now that isn’t to say every compiler looks exactly like I described here.
- * Compilers serve many different purposes, and they might need more steps than
- * I have detailed.
+ * 当然也并不是说所有的编译器都完全像我描述的这样。编译器有多种不同的用途，除了上面提到的几个
+ * 步骤之外，它们可能需要更多的步骤以完成特定功能。
  *
- * But now you should have a general high-level idea of what most compilers look
- * like.
+ * 但是现在你对于大多数编译器是什么样子应该已经有了一个大致的的认识。
  *
- * Now that I’ve explained all of this, you’re all good to go write your own
- * compilers right?
+ * 既然我已经介绍完了，你也准备好编写你自己的编译器了，对吗？
  *
- * Just kidding, that's what I'm here to help with :P
+ * 哈哈，开个玩笑，接下来我会帮助你编写一个编译器。
  *
- * So let's begin...
+ * 所以， 我们开始吧...
  */
 
 /**
@@ -339,59 +333,50 @@
  */
 
 /**
- * We're gonna start off with our first phase of parsing, lexical analysis, with
- * the tokenizer.
+ * 我们从代码分析（parsing）的第一个阶段开始：使用分词器（tokenizer）进行词法分析（lexical analysis）。
  *
- * We're just going to take our string of code and break it down into an array
- * of tokens.
+ * 我们会接受代码的字符串，然后将其拆分到由多个token组成的数组。
  *
  *   (add 2 (subtract 4 2))   =>   [{ type: 'paren', value: '(' }, ...]
  */
 
-// We start by accepting an input string of code, and we're gonna set up two
-// things...
+// 我们从接受一个代码的字符串开始，并且将要设置两个东西...
 function tokenizer(input) {
 
-  // A `current` variable for tracking our position in the code like a cursor.
+  // `current` 变量用于跟踪当前我们在代码中的位置，就像一个指针。
   let current = 0;
 
-  // And a `tokens` array for pushing our tokens to.
+  // `tokens` 数组用于保存token
   let tokens = [];
 
-  // We start by creating a `while` loop where we are setting up our `current`
-  // variable to be incremented as much as we want `inside` the loop.
+  // 创建一个 `while` 循环，在循环里面我们会设置`current`，让它根据我们的需要进行递增
   //
-  // We do this because we may want to increment `current` many times within a
-  // single loop because our tokens can be any length.
+  // 这样做的原因是tokens可能有任意长度，我们需要在循环中让 `current` 变量递增多次
   while (current < input.length) {
 
-    // We're also going to store the `current` character in the `input`.
+    // 保存`input`中`current`位置的字符
     let char = input[current];
 
-    // The first thing we want to check for is an open parenthesis. This will
-    // later be used for `CallExpression` but for now we only care about the
-    // character.
+    // 首先要检查的是左括号。它稍后会用于`CallExpression`，但现在我们只关心左括号字符即可。
     //
-    // We check to see if we have an open parenthesis:
+    // 判断当前是否为左括号
     if (char === '(') {
 
-      // If we do, we push a new token with the type `paren` and set the value
-      // to an open parenthesis.
+      // 如果是左括号，就向`tokens`中推入一个新token，类型为`paren`，值为“左括号”。
       tokens.push({
         type: 'paren',
         value: '(',
       });
 
-      // Then we increment `current`
+      // 递增`current`
       current++;
 
-      // And we `continue` onto the next cycle of the loop.
+      // 使用 `continue` 结束本次循环，直接跳入下次循环
       continue;
     }
 
-    // Next we're going to check for a closing parenthesis. We do the same exact
-    // thing as before: Check for a closing parenthesis, add a new token,
-    // increment `current`, and `continue`.
+    // 检查右括号。处理过程与前面一样：如果是右括号，就推入一个新token,
+    // 递增`current`, 然后使用 `continue` 结束本次循环，直接跳入下次循环
     if (char === ')') {
       tokens.push({
         type: 'paren',
@@ -401,83 +386,73 @@ function tokenizer(input) {
       continue;
     }
 
-    // Moving on, we're now going to check for whitespace. This is interesting
-    // because we care that whitespace exists to separate characters, but it
-    // isn't actually important for us to store as a token. We would only throw
-    // it out later.
+    // 接下来要检查空格符。有趣的是，空格符的存在时为了分割字符，但它实际上并不需要
+    // 作为token保存。后面我们将直接把它扔掉。
     //
-    // So here we're just going to test for existence and if it does exist we're
-    // going to just `continue` on.
+    // 因此这里我们只需判断是否为空格符，如果是，就使用 `continue` 结束本次循环，直接跳入下次循环
     let WHITESPACE = /\s/;
     if (WHITESPACE.test(char)) {
       current++;
       continue;
     }
 
-    // The next type of token is a number. This is different than what we have
-    // seen before because a number could be any number of characters and we
-    // want to capture the entire sequence of characters as one token.
+    // 接下来的这种token是数字类型。它和我们刚刚看到的东西不同，因为一个数字可能含任意
+    // 数量的字符，并且我们要捕捉整个字符序列作为一个token。
     //
     //   (add 123 456)
     //        ^^^ ^^^
     //        Only two separate tokens
     //
-    // So we start this off when we encounter the first number in a sequence.
+    // 所以当我们遇到序列中第一个数字时，就开始处理它。
     let NUMBERS = /[0-9]/;
     if (NUMBERS.test(char)) {
 
-      // We're going to create a `value` string that we are going to push
-      // characters to.
+      // 创建一个`value`字符串，后续我们会在`value`上面添加字符。
       let value = '';
 
-      // Then we're going to loop through each character in the sequence until
-      // we encounter a character that is not a number, pushing each character
-      // that is a number to our `value` and incrementing `current` as we go.
+      // 遍历序列中每个字符，如果当前字符是数字，就将它追加到 `value`， 并递增`current`，
+      // 直到遇到一个不是数字的字符时停止。
       while (NUMBERS.test(char)) {
         value += char;
         char = input[++current];
       }
 
-      // After that we push our `number` token to the `tokens` array.
+      // 将这个数字类型的token推入 `tokens` 数组
       tokens.push({ type: 'number', value });
 
-      // And we continue on.
+      // 结束本次循环，跳入下次循环
       continue;
     }
 
-    // We'll also add support for strings in our language which will be any
-    // text surrounded by double quotes (").
+    // 我们也支持字符串，它们由双引号包裹的任意文本
     //
     //   (concat "foo" "bar")
     //            ^^^   ^^^ string tokens
     //
-    // We'll start by checking for the opening quote:
+    // 首先，我们检查一个左侧的双引号：
     if (char === '"') {
-      // Keep a `value` variable for building up our string token.
+      // 使用 `value` 变量来构建字符串token
       let value = '';
 
-      // We'll skip the opening double quote in our token.
+      // 跳过左侧的双引号，不把它加入到token中
       char = input[++current];
 
-      // Then we'll iterate through each character until we reach another
-      // double quote.
+      // 遍历并保存每个字符，直到遇到另一个双引号为止。
       while (char !== '"') {
         value += char;
         char = input[++current];
       }
 
-      // Skip the closing double quote.
+      // 递增`current`指针，让它跳过右侧的双引号
       char = input[++current];
 
-      // And add our `string` token to the `tokens` array.
+      // 将这个字符串token推入`tokens`数组
       tokens.push({ type: 'string', value });
 
       continue;
     }
 
-    // The last type of token will be a `name` token. This is a sequence of
-    // letters instead of numbers, that are the names of functions in our lisp
-    // syntax.
+    // 最后一种token类型是名称token。它是一个字母序列，是list语法中的函数名称
     //
     //   (add 2 4)
     //    ^^^
@@ -487,25 +462,23 @@ function tokenizer(input) {
     if (LETTERS.test(char)) {
       let value = '';
 
-      // Again we're just going to loop through all the letters pushing them to
-      // a value.
+      // 遍历字母并将其追加到 `value` 中
       while (LETTERS.test(char)) {
         value += char;
         char = input[++current];
       }
 
-      // And pushing that value as a token with the type `name` and continuing.
+      // 将这个名称token推入 `tokens` 数组
       tokens.push({ type: 'name', value });
 
       continue;
     }
 
-    // Finally if we have not matched a character by now, we're going to throw
-    // an error and completely exit.
+    // 如果到这里还没匹配到任何字符，就抛出一个异常然后退出程序。
     throw new TypeError('I dont know what this character is: ' + char);
   }
 
-  // Then at the end of our `tokenizer` we simply return the tokens array.
+  // 最后，我们只需返回 `tokens` 数组即可。
   return tokens;
 }
 
