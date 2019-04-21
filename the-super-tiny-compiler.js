@@ -635,6 +635,8 @@ function parser(tokens) {
  * So now we have our AST, and we want to be able to visit different nodes with
  * a visitor. We need to be able to call the methods on the visitor whenever we
  * encounter a node with a matching type.
+ * 现在我们已经有AST了，我们希望能够使用 `visitor` 访问不同的节点。我们需要在遇到类型匹配
+ * 的节点时调用 `visitor` 上的方法。
  *
  *   traverse(ast, {
  *     Program: {
@@ -668,10 +670,13 @@ function parser(tokens) {
 
 // So we define a traverser function which accepts an AST and a
 // visitor. Inside we're going to define two functions...
+// 定义traverser函数，它接受一个AST和一个visitor作为参数。在函数内我们
+// 将定义两个函数...
 function traverser(ast, visitor) {
 
   // A `traverseArray` function that will allow us to iterate over an array and
   // call the next function that we will define: `traverseNode`.
+  // `traverseArray` 函数可以遍历一个数组并且调用下面的 `traverseNode` 函数。
   function traverseArray(array, parent) {
     array.forEach(child => {
       traverseNode(child, parent);
@@ -680,10 +685,13 @@ function traverser(ast, visitor) {
 
   // `traverseNode` will accept a `node` and its `parent` node. So that it can
   // pass both to our visitor methods.
+  // `traverseNode` 函数接受 `node` 和 `node`的父节点 `parent` 作为参数。因此可以
+  // 把这两个参数传入visitor的方法。
   function traverseNode(node, parent) {
 
     // We start by testing for the existence of a method on the visitor with a
     // matching `type`.
+    // 
     let methods = visitor[node.type];
 
     // If there is an `enter` method for this node type we'll call it with the
