@@ -921,8 +921,7 @@ function codeGenerator(node) {
  */
 
 /**
- * FINALLY! We'll create our `compiler` function. Here we will link together
- * every part of the pipeline.
+ * 最后一步！创建 `compiler` 函数。只需将下面示意的管道连起来即可。
  *
  *   1. input  => tokenizer   => tokens
  *   2. tokens => parser      => ast
@@ -936,7 +935,7 @@ function compiler(input) {
   let newAst = transformer(ast);
   let output = codeGenerator(newAst);
 
-  // and simply return the output!
+  // 返回结果即可。
   return output;
 }
 
@@ -947,7 +946,7 @@ function compiler(input) {
  * ============================================================================
  */
 
-// Now I'm just exporting everything...
+// 导出各函数...
 module.exports = {
   tokenizer,
   parser,
