@@ -732,9 +732,8 @@ function traverser(ast, visitor) {
  */
 
 /**
- * Next up, the transformer. Our transformer is going to take the AST that we
- * have built and pass it to our traverser function with a visitor and will
- * create a new ast.
+ * 接下来是transformer，它接受AST作为参数，并将AST和一个visitor传入traverser，然后
+ * 生成一个新的AST。
  *
  * ----------------------------------------------------------------------------
  *   Original AST                     |   Transformed AST
@@ -772,34 +771,30 @@ function traverser(ast, visitor) {
  * ----------------------------------------------------------------------------
  */
 
-// So we have our transformer function which will accept the lisp ast.
+// 我们的transformer函数要接受lisp代码的AST。
 function transformer(ast) {
 
-  // We'll create a `newAst` which like our previous AST will have a program
-  // node.
+  // 创建一个新的AST `newAst`，它和之前的AST一样，也包含一个 program 节点。
   let newAst = {
     type: 'Program',
     body: [],
   };
 
-  // Next I'm going to cheat a little and create a bit of a hack. We're going to
-  // use a property named `context` on our parent nodes that we're going to push
-  // nodes to their parent's `context`. Normally you would have a better
-  // abstraction than this, but for our purposes this keeps things simple.
+  // 接下来我们要稍微作弊一下。我们在父节点上添加一个 `context` 属性，
+  // 并且向 `context` 中添加节点。通常你应该有一个比这更好的抽象，但对于我们当前的目标
+  // 来说，这样处理会更简单。
   //
-  // Just take note that the context is a reference *from* the old ast *to* the
-  // new ast.
+  // 注意，context 是在旧AST上对新AST的一个引用。
   ast._context = newAst.body;
 
-  // We'll start by calling the traverser function with our ast and a visitor.
+  // 调用traverser函数，并传入AST和visitor。
   traverser(ast, {
 
-    // The first visitor method accepts any `NumberLiteral`
+    // 第一个visitor方法用于处理任意的`NumberLiteral`
     NumberLiteral: {
-      // We'll visit them on enter.
+      // 使用enter方法访问它们
       enter(node, parent) {
-        // We'll create a new node also named `NumberLiteral` that we will push to
-        // the parent context.
+        // 创建一个新的 `NumberLiteral` 节点，并将其加入context。
         parent._context.push({
           type: 'NumberLiteral',
           value: node.value,
@@ -807,7 +802,7 @@ function transformer(ast) {
       },
     },
 
-    // Next we have `StringLiteral`
+    // 处理 `StringLiteral`。
     StringLiteral: {
       enter(node, parent) {
         parent._context.push({
@@ -817,12 +812,11 @@ function transformer(ast) {
       },
     },
 
-    // Next up, `CallExpression`.
+    // 处理 `CallExpression`。
     CallExpression: {
       enter(node, parent) {
 
-        // We start creating a new node `CallExpression` with a nested
-        // `Identifier`.
+        // 首先创建一个新的 `CallExpression` 节点，它含有一个嵌套的 `Identifier` 节点。
         let expression = {
           type: 'CallExpression',
           callee: {
@@ -832,33 +826,29 @@ function transformer(ast) {
           arguments: [],
         };
 
-        // Next we're going to define a new context on the original
-        // `CallExpression` node that will reference the `expression`'s arguments
-        // so that we can push arguments.
+        // 在原来的 `CallExpression` 节点上创建一个新的context来引用 `expression` 的
+        // arguments，这样就能向里面添加参数了。
         node._context = expression.arguments;
 
-        // Then we're going to check if the parent node is a `CallExpression`.
-        // If it is not...
+        // 判断父节点是否为 `CallExpression`。
+        // 如果不是的话...
         if (parent.type !== 'CallExpression') {
 
-          // We're going to wrap our `CallExpression` node with an
-          // `ExpressionStatement`. We do this because the top level
-          // `CallExpression` in JavaScript are actually statements.
+          // 用 `ExpressionStatement` 节点包裹 `CallExpression`。这么做的原因是
+          // 在JavaScript中，顶层 `CallExpression` 实际上是声明。
           expression = {
             type: 'ExpressionStatement',
             expression: expression,
           };
         }
 
-        // Last, we push our (possibly wrapped) `CallExpression` to the `parent`'s
-        // `context`.
+        // 最后，把（可能被包裹了的）`CallExpression` 添加到 `parent` 的 `context`。
         parent._context.push(expression);
       },
     }
   });
 
-  // At the end of our transformer function we'll return the new ast that we
-  // just created.
+  // 返回新AST。
   return newAst;
 }
 
