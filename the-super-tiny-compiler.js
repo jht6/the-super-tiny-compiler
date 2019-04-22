@@ -600,8 +600,6 @@ function parser(tokens) {
     throw new TypeError(token.type);
   }
 
-  // Now, we're going to create our AST which will have a root which is a
-  // `Program` node.
   // 创建AST，它的根节点是 `Program`。
   let ast = {
     type: 'Program',
@@ -632,11 +630,8 @@ function parser(tokens) {
  */
 
 /**
- * So now we have our AST, and we want to be able to visit different nodes with
- * a visitor. We need to be able to call the methods on the visitor whenever we
- * encounter a node with a matching type.
- * 现在我们已经有AST了，我们希望能够使用 `visitor` 访问不同的节点。我们需要在遇到类型匹配
- * 的节点时调用 `visitor` 上的方法。
+ * 现在我们已经有AST了，我们希望能够使用visitor访问不同的节点。我们需要在遇到类型匹配
+ * 的节点时调用visitor上的方法。
  *
  *   traverse(ast, {
  *     Program: {
@@ -668,14 +663,10 @@ function parser(tokens) {
  *   });
  */
 
-// So we define a traverser function which accepts an AST and a
-// visitor. Inside we're going to define two functions...
-// 定义traverser函数，它接受一个AST和一个visitor作为参数。在函数内我们
+// 定义 `traverser` 函数，它接受一个AST和一个visitor作为参数。在函数内我们
 // 将定义两个函数...
 function traverser(ast, visitor) {
 
-  // A `traverseArray` function that will allow us to iterate over an array and
-  // call the next function that we will define: `traverseNode`.
   // `traverseArray` 函数可以遍历一个数组并且调用下面的 `traverseNode` 函数。
   function traverseArray(array, parent) {
     array.forEach(child => {
@@ -683,62 +674,53 @@ function traverser(ast, visitor) {
     });
   }
 
-  // `traverseNode` will accept a `node` and its `parent` node. So that it can
-  // pass both to our visitor methods.
   // `traverseNode` 函数接受 `node` 和 `node`的父节点 `parent` 作为参数。因此可以
   // 把这两个参数传入visitor的方法。
   function traverseNode(node, parent) {
 
-    // We start by testing for the existence of a method on the visitor with a
-    // matching `type`.
-    // 
+    // 首先判断传入的node类型在visitor中是否存在对应的方法。
     let methods = visitor[node.type];
 
-    // If there is an `enter` method for this node type we'll call it with the
-    // `node` and its `parent`.
+    // 如果存在 `enter` 方法，则调用它，并以 `node` 和 `parent` 作为参数。
     if (methods && methods.enter) {
       methods.enter(node, parent);
     }
 
-    // Next we are going to split things up by the current node type.
+    // 接下来按照当前节点的类型分别进行处理。
     switch (node.type) {
 
-      // We'll start with our top level `Program`. Since Program nodes have a
-      // property named body that has an array of nodes, we will call
-      // `traverseArray` to traverse down into them.
+      // 从顶层的 `Program` 节点开始处理。由于 `Program` 节点有个叫 `body` 的属性，
+      // 它是一个由节点组成的数组，因此我们调用 `traverseArray` 来遍历里面的节点。
       //
-      // (Remember that `traverseArray` will in turn call `traverseNode` so  we
-      // are causing the tree to be traversed recursively)
+      // （记住，`traverseArray` 会依次为每个节点调用 `traverseNode`，因此会使节点树
+      // 被递归地遍历）
       case 'Program':
         traverseArray(node.body, node);
         break;
 
-      // Next we do the same with `CallExpression` and traverse their `params`.
+      // 对于 `CallExpression` 则遍历它的 `params`。
       case 'CallExpression':
         traverseArray(node.params, node);
         break;
 
-      // In the cases of `NumberLiteral` and `StringLiteral` we don't have any
-      // child nodes to visit, so we'll just break.
+      // `NumberLiteral` 和 `StringLiteral` 类型的节点没有子节点需要访问，直接break即可。
       case 'NumberLiteral':
       case 'StringLiteral':
         break;
 
-      // And again, if we haven't recognized the node type then we'll throw an
-      // error.
+      // 如果未识别出节点类型，就抛出错误。
       default:
         throw new TypeError(node.type);
     }
 
-    // If there is an `exit` method for this node type we'll call it with the
-    // `node` and its `parent`.
+    // 如果存在 `exit` 方法，则调用它，并以 `node` 和 `parent` 作为参数。
     if (methods && methods.exit) {
       methods.exit(node, parent);
     }
   }
 
-  // Finally we kickstart the traverser by calling `traverseNode` with our ast
-  // with no `parent` because the top level of the AST doesn't have a parent.
+  // 最后我们通过调用 `traverseNode` 函数启动traverser，传入AST作为参数，但是 `parent`
+  // 为空值，因为最顶层的AST没有父节点。
   traverseNode(ast, null);
 }
 
