@@ -860,35 +860,32 @@ function transformer(ast) {
  */
 
 /**
- * Now let's move onto our last phase: The Code Generator.
+ * 现在来到最后的阶段：代码生成器
  *
- * Our code generator is going to recursively call itself to print each node in
- * the tree into one giant string.
+ * 代码生成器递归地调用自身，将AST上的每个节点输出到一个很长的字符串（即最终生成的代码）中。
  */
 
 function codeGenerator(node) {
 
-  // We'll break things down by the `type` of the `node`.
+  // 根据 `node' 的 `type` 的不同，分别进行处理
   switch (node.type) {
 
-    // If we have a `Program` node. We will map through each node in the `body`
-    // and run them through the code generator and join them with a newline.
+    // 如果是 `Program` 节点，则使用 ·codeGenerator· 遍历 `body` 中的每个节点，并对
+    // 得到的数组以换行符未参数进行 `join` 操作。
     case 'Program':
       return node.body.map(codeGenerator)
         .join('\n');
 
-    // For `ExpressionStatement` we'll call the code generator on the nested
-    // expression and we'll add a semicolon...
+    // 对于 `ExpressionStatement` 节点，则用 `codeGenerator` 处理 `node.expresson`，
+    // 并添加一个分号。
     case 'ExpressionStatement':
       return (
         codeGenerator(node.expression) +
-        ';' // << (...because we like to code the *correct* way)
+        ';' // << (...因为我们喜欢用 *正确的* 方式编码)
       );
 
-    // For `CallExpression` we will print the `callee`, add an open
-    // parenthesis, we'll map through each node in the `arguments` array and run
-    // them through the code generator, joining them with a comma, and then
-    // we'll add a closing parenthesis.
+    // 对于 `CallExpression`，则输出它的 `callee`，添加一个左括号，用 `codeGenerator`
+    // 遍历处理 `arguments` 数组并以逗号为参数进行 `join` 操作，最后再加个右括号。
     case 'CallExpression':
       return (
         codeGenerator(node.callee) +
@@ -898,19 +895,19 @@ function codeGenerator(node) {
         ')'
       );
 
-    // For `Identifier` we'll just return the `node`'s name.
+    // 对于 `Identifier` 节点，直接返回 `node.name`。
     case 'Identifier':
       return node.name;
 
-    // For `NumberLiteral` we'll just return the `node`'s value.
+    // 对于 `NumberLiteral` 节点，直接返回 `node.value`。
     case 'NumberLiteral':
       return node.value;
 
-    // For `StringLiteral` we'll add quotations around the `node`'s value.
+    // 对于 `StringLiteral` 节点，在 `node.value` 的两侧添加双引号。
     case 'StringLiteral':
       return '"' + node.value + '"';
 
-    // And if we haven't recognized the node, we'll throw an error.
+    // 如果未识别节点类型，则抛出错误。
     default:
       throw new TypeError(node.type);
   }
