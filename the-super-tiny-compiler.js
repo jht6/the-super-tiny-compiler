@@ -871,7 +871,7 @@ function codeGenerator(node) {
   switch (node.type) {
 
     // 如果是 `Program` 节点，则使用 ·codeGenerator· 遍历 `body` 中的每个节点，并对
-    // 得到的数组以换行符未参数进行 `join` 操作。
+    // 得到的数组以换行符为参数进行 `join` 操作。
     case 'Program':
       return node.body.map(codeGenerator)
         .join('\n');
